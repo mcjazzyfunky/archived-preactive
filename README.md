@@ -1,6 +1,7 @@
 # preactive 
 
-Just trying out some Preact addons...
+A R&D project to evaluate an alternative API for components and
+hook functions for Preact.
 
 ### Installation
 
@@ -47,13 +48,15 @@ render(<Counter/>, document.getElementById('app'))
 ```
 
 In the above example the `c` is a so called component controller
-(a kind of representation for the component instance).
-It's type is currently (may change in future):
+(some kind of representation for the component instance).
+Its type is currently (may change in future):
 
 ```typescript
 type Ctrl<P extends Props = {}> = {
   getProps(): P,
   isMounted(): boolean,
+  update(): void,
+  getContextValue<T>(Context<T>): T,
   afterMount(subscriber: Subscriber): void,
   beforeUpdate(subscriber: Subscriber): void,
   afterUpdate(subscriber: Subscriber): void,
@@ -64,4 +67,5 @@ type Ctrl<P extends Props = {}> = {
 type Props = Record<string, any>
 type Subscriber = () => void
 type Task = () => void
+type Context<T> = Preact.Context<T>
 ```
