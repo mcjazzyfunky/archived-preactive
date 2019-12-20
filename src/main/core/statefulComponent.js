@@ -1,51 +1,99 @@
-import { useState, useEffect, useRef } from 'preact/hooks'
+import { options } from 'preact'
+
+const COMPONENT_KEY = '__c' // that's ugly, isn't it?
+
+let currComponent
+let oldBeforeRender = options._render
+let oldAfterDiff = options.diffed
+let oldCommit = options._commit
+let oldBeforeUnmount = options.unmount
+
+options.diffed = vnode => {
+  oldAfterDiff && oldAfterDiff(vnode)
+  currComponent = vnode[COMPONENT_KEY]
+  
+  const data = currComponent && currComponent.__data
+  
+  if (data) {
+    if (data.mounted) {
+      data.notifiers.afterUpdate.notify() // TODO: What about commit?
+    } else {
+      data.mounted = true
+      data.notifiers.afterMount.notify()
+    }
+  }
+}
+
+options._render = vnode => {
+  currComponent = vnode[COMPONENT_KEY]
+  oldBeforeRender && oldBeforeRender(vnode)
+}
+
+options._commit = (vnode, commitQueue) => {
+  oldCommit && oldCommit(vnode, commitQueue)
+
+  // TODO - what to do here?
+}
+
+options.unmount = vnode => {
+  oldBeforeUnmount && oldBeforeUnmount(vnode)
+
+  const
+    component = vnode && vnode[COMPONENT_KEY],
+    data = component && component.__data
+
+  if (data) {
+    data.notifiers.beforeUnmount.notify()
+  }
+}
+
+function createCtrlAndNotifiers(getProps, isMounted, forceUpdate) {
+  const notifiers = {
+    afterMount: createNotifier(),
+    beforeUpdate: createNotifier(),
+    afterUpdate: createNotifier(),
+    beforeUnmount: createNotifier()
+  }
+
+  return [{
+    getProps,
+    isMounted,
+    update: forceUpdate,
+    afterMount: notifiers.afterMount.subscribe,
+    beforeUpdate: notifiers.beforeUpdate.subscribe,
+    afterUpdate: notifiers.afterUpdate.subscribe,
+    beforeUnmount: notifiers.beforeUnmount.subscribe
+  }, notifiers]
+}
 
 export default function statefulComponent(displayName, init) {
   const preactComponent = props => {
-    let mountedRef = useRef(false)
 
-    const
-      propsRef = useRef(props),
-      [, setDummy] = useState(true) // used for update - see below
-    
-    propsRef.current = props
+    if (!currComponent.__data) {
+      const [ctrl, notifiers] = createCtrlAndNotifiers(
+        () => data.props,
+        () => data.mounted,
+        () => data.component.forceUpdate()
+      )
 
-    const [render, notifiers] = useState(() => {
-      const notifiers = {
-        afterMount: createNotifier(),
-        beforeUpdate: createNotifier(),
-        afterUpdate: createNotifier(),
-        beforeUnmount: createNotifier()
+      const data = {
+        component: currComponent,
+        props,
+        mounted: false,
+        notifiers,
+        ctrl,
+
+        render: null
       }
 
-      return [init({
-        getProps: () => propsRef.current,
-        isMounted: () => mountedRef.current,
-        update: () => setDummy(it => !it),
-        afterMount: notifiers.afterMount.subscribe,
-        beforeUpdate: notifiers.beforeUpdate.subscribe,
-        afterUpdate: notifiers.afterUpdate.subscribe,
-        beforeUnmount: notifiers.beforeUnmount.subscribe
-      }), notifiers]
-    })[0]
+      currComponent.__data = data
 
-    useEffect(() => {
-      if (mountedRef.current) {
-        notifiers.afterUpdate.notify()
-      }
-    })
+      data.render = init(ctrl)
+    } else {
+      currComponent.__data.notifiers.beforeUpdate.notify()
+    }
     
-    useEffect(() => {
-      notifiers.afterMount.notify()
-      mountedRef.current = true
-
-      return notifiers.beforeUnmount.notify
-    }, [])
-
-    notifiers.beforeUpdate.notify()
-    const content = render(props)
-
-    return content
+    return currComponent.__data.render(props)
   }
   
   preactComponent.displayName = displayName
