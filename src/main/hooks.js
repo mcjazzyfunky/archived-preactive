@@ -1,4 +1,70 @@
-import { asRef } from './utils'
+// --- useProps ------------------------------------------------------
+
+// TODO - this must be optimized
+export function useProps(c, defaultProps = null) {
+  const props = Object.assign({}, defaultProps, c.getProps())
+
+  c.beforeUpdate(() => {
+    for (const key in props) {
+      delete props[key]
+    }
+
+    Object.assign(props, defaultProps, c.getProps())
+  })
+
+  return props
+}
+
+// --- useState ------------------------------------------------------
+
+export function useState(c, initialState) {
+  const
+    state = Object.assign({}, initialState),
+
+    setState = (arg1, arg2) => {
+      let updater
+
+      if (typeof arg1 !== 'string') {
+        updater = arg1
+      } else if (typeof arg2 !== 'function') {
+        updater = { [arg1]: arg2 }
+      } else {
+        updater = state => ({
+          [arg1]: arg2(state[arg1])
+        })
+      } 
+
+      c.runOnceBeforeUpdate(() => {
+        Object.assign(state, typeof updater === 'function'
+          ? updater(state)
+          : updater
+        )
+      })
+
+      c.update()
+    }
+
+  return [state, setState]
+}
+
+// --- useValue ------------------------------------------------------
+
+export function useValue(c, initialValue) {
+  const
+    value = { value: initialValue },
+
+    setValue = updater => {
+      c.runOnceBeforeUpdate(() => {
+        value.value = typeof updater === 'function'
+          ? updater(value.value)
+          : updater
+      })
+
+      c.update()
+    }
+
+  return [value, setValue]
+}
 
 // --- useContext ----------------------------------------------------
 
@@ -12,7 +78,8 @@ export function useContext(c, context) {
   return ret
 }
 
-// --- useEffect ----------------------------------------------------.
+// --- useEffect -----------------------------------------------------
+
 export function useEffect(c, action, getDeps) {
   let
     oldDeps = null,
@@ -79,73 +146,6 @@ export function useMemo(c, getValue, getDeps) {
   return memo
 }
 
-// --- useProps ------------------------------------------------------
-
-// TODO - this must be optimized
-export function useProps(c, defaultProps = null) {
-  const props = Object.assign({}, defaultProps, c.getProps())
-
-  c.beforeUpdate(() => {
-    for (const key in props) {
-      delete props[key]
-    }
-
-    Object.assign(props, defaultProps, c.getProps())
-  })
-
-  return props
-}
-
-// --- useState ------------------------------------------------------
-
-export function useState(c, initialState) {
-  const
-    state = Object.assign({}, initialState),
-
-    setState = (arg1, arg2) => {
-      let updater
-
-      if (typeof arg1 !== 'string') {
-        updater = arg1
-      } else if (typeof arg2 !== 'function') {
-        updater = { [arg1]: arg2 }
-      } else {
-        updater = state => ({
-          [arg1]: arg2(state[arg1])
-        })
-      } 
-
-      c.runOnceBeforeUpdate(() => {
-        Object.assign(state, typeof updater === 'function'
-          ? updater(state)
-          : updater
-        )
-      })
-
-      c.update()
-    }
-
-  return [state, setState]
-}
-
-// --- useValue ------------------------------------------------------
-export function useValue(c, initialValue) {
-  const
-    value = { value: initialValue },
-
-    setValue = updater => {
-      c.runOnceBeforeUpdate(() => {
-        value.value = typeof updater === 'function'
-          ? updater(value.value)
-          : updater
-      })
-
-      c.update()
-    }
-
-  return [value, setValue]
-}
-
 // --- locals --------------------------------------------------------
 
 function isEqualArray(arr1, arr2) {
@@ -161,4 +161,10 @@ function isEqualArray(arr1, arr2) {
   }
 
   return ret
+}
+
+function asRef(arg) {
+  return arg && Object.prototype.hasOwnProperty.call(arg, 'current')
+    ? arg
+    : { current: arg }
 }

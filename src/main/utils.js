@@ -6,24 +6,8 @@ export function asRef(arg) {
     : { current: arg }
 } 
 
-// --- forceUpdate ---------------------------------------------------
-
-export function forceUpdate(c) {
-  c.update()
-}
-export function getProps(c, defaultProps = null) {
-  return !defaultProps
-    ? c.getProps()
-    : Object.assign({}, defaultProps, c.getProps())
-}
-
-// --- isMounted -----------------------------------------------------
-
-export function isMounted(c) {
-  return c.isMounted()
-}
-
 // --- toRef ---------------------------------------------------------
+
 export function toRef(getter) {
   const ref = {}
 
@@ -36,4 +20,24 @@ export function toRef(getter) {
   })
 
   return ref
+}
+
+// --- getProps ------------------------------------------------------
+
+export function getProps(c, defaultProps = null) {
+  return !defaultProps
+    ? c.getProps()
+    : Object.assign({}, defaultProps, c.getProps())
+}
+
+// --- isMounted -----------------------------------------------------
+
+export function isMounted(c) {
+  return c.isMounted()
+}
+
+// --- forceUpdate ---------------------------------------------------
+
+export function forceUpdate(c) {
+  c.update()
 }
