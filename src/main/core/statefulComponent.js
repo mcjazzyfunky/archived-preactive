@@ -1,4 +1,4 @@
-import { Component, options } from 'preact'
+import { Component } from 'preact'
 
 // Brrrr, this is horrible as hell - please fix asap!!!!
 const
@@ -7,55 +7,65 @@ const
   keyContextDefaultValue = isMinimized ? '__' : '_defaultValue'
 
 export default function statefulComponent(displayName, init) {
-  class CustomComponent extends Component {
-    constructor(props) {
-      super(props)
-      
-      let mounted = false
-
-      const
-        afterMountNotifier = createNotifier(),
-        beforeUpdateNotifier = createNotifier(),
-        afterUpdateNotifier = createNotifier(),
-        beforeUnmountNotifier = createNotifier(),
-
-        ctrl = {
-          getProps: () => this.props,
-          isMounted: () => mounted,
-          update: () => this.forceUpdate(),
-
-          getContextValue: ctx => {
-            const provider = this.context[ctx[keyContextId]]
-            const ret = !provider ? ctx[keyContextDefaultValue]: provider.props.value
-            return ret
-          },
-          afterMount: afterMountNotifier.subscribe,
-          beforeUpdate: beforeUpdateNotifier.subscribe,
-          afterUpdate: afterUpdateNotifier.subscribe,
-          beforeUnmount: beforeUnmountNotifier.subscribe
-        },
-
-        render = init(ctrl)
-
-      this.componentDidMount = () => {
-        mounted = true
-        afterMountNotifier.notify()
-      }
-
-      this.componentDidUpdate = afterUpdateNotifier.notify
-      this.componentWillUnmount = beforeUnmountNotifier.notify
-
-      this.render = () => {
-        beforeUpdateNotifier.notify()
-        return render(props)
-      }
-    }
-  }
-
+  class CustomComponent extends BaseComponent {}
+  
+  CustomComponent.init = init
   CustomComponent.displayName = displayName
 
   return CustomComponent
 }
+
+class BaseComponent extends Component {
+  // will be set by function `staefulComponent`:
+  //
+  // static init(c) {
+  //  . ..
+  // }
+
+  constructor(props) {
+    super(props)
+    
+    let mounted = false
+
+    const
+      afterMountNotifier = createNotifier(),
+      beforeUpdateNotifier = createNotifier(),
+      afterUpdateNotifier = createNotifier(),
+      beforeUnmountNotifier = createNotifier(),
+
+      ctrl = {
+        getProps: () => this.props,
+        isMounted: () => mounted,
+        update: () => this.forceUpdate(),
+
+        getContextValue: ctx => {
+          const provider = this.context[ctx[keyContextId]]
+          const ret = !provider ? ctx[keyContextDefaultValue]: provider.props.value
+          return ret
+        },
+        afterMount: afterMountNotifier.subscribe,
+        beforeUpdate: beforeUpdateNotifier.subscribe,
+        afterUpdate: afterUpdateNotifier.subscribe,
+        beforeUnmount: beforeUnmountNotifier.subscribe
+      },
+
+      render = this.constructor.init(ctrl)
+
+    this.componentDidMount = () => {
+      mounted = true
+      afterMountNotifier.notify()
+    }
+
+    this.componentDidUpdate = afterUpdateNotifier.notify
+    this.componentWillUnmount = beforeUnmountNotifier.notify
+
+    this.render = () => {
+      beforeUpdateNotifier.notify()
+      return render(props)
+    }
+  }
+}
+
 
 function createNotifier() {
   let
@@ -68,9 +78,13 @@ function createNotifier() {
       isNotifying = true
 
       try {
-        subscriptions.forEach(subscription => {
-          subscription && subscription[0](value)
-        })
+        const length = subscriptions.length
+
+        for (let i = 0; i < length; ++i) {
+          const subscription = subscriptions[i]
+
+          subscription && subscription(value)
+        }
       } finally {
         isNotifying = false
 
@@ -86,7 +100,7 @@ function createNotifier() {
 
       const unsubscribe = () => {
         if (listener !== null) {
-          const index = subscriptions.findIndex(it => it && it[0] === listener)
+          const index = subscriptions.findIndex(it => it && it === listener)
           
           listener = null
 
@@ -99,16 +113,12 @@ function createNotifier() {
         }
       }
 
-      subscriptions.push([listener, unsubscribe])
+      subscriptions.push(listener)
       return unsubscribe
     },
 
-    clear() {
-      try {
-        subscriptions.forEach(it => it && it[1]())
-      } finally {
-        subscriptions = []
-      }
+    dismiss() {
+      subscriptions.length = 0
     }
   }
 }
