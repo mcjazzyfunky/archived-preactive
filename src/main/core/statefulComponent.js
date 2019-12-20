@@ -8,7 +8,6 @@ const
 
 export default function statefulComponent(displayName, init) {
   class CustomComponent extends BaseComponent {}
-  
   CustomComponent.init = init
   CustomComponent.displayName = displayName
 
@@ -16,11 +15,7 @@ export default function statefulComponent(displayName, init) {
 }
 
 class BaseComponent extends Component {
-  // will be set by function `staefulComponent`:
-  //
-  // static init(c) {
-  //  . ..
-  // }
+  // static init(c) { ... } // will be set by function `statefulComponent`
 
   constructor(props) {
     super(props)
@@ -32,24 +27,25 @@ class BaseComponent extends Component {
       beforeUpdateNotifier = createNotifier(),
       afterUpdateNotifier = createNotifier(),
       beforeUnmountNotifier = createNotifier(),
-      deferredTasks = [],
+      runOnceBeforeUpdateTasks = [],
 
       ctrl = {
         getProps: () => this.props,
-        isMounted: () => mounted, // TODO: this is obviously sugar - shall it be removed???
+        isMounted: () => mounted,
         update: () => this.forceUpdate(),
 
         getContextValue: ctx => {
           const provider = this.context[ctx[keyContextId]]
-          const ret = !provider ? ctx[keyContextDefaultValue]: provider.props.value
-          return ret
+
+          return  !provider ? ctx[keyContextDefaultValue] : provider.props.value
         },
+
         afterMount: afterMountNotifier.subscribe,
         beforeUpdate: beforeUpdateNotifier.subscribe,
         afterUpdate: afterUpdateNotifier.subscribe,
         beforeUnmount: beforeUnmountNotifier.subscribe,
 
-        runOnceBeforeUpdate: task => deferredTasks.push(task) // TODO - shall this be merged with `update`???
+        runOnceBeforeUpdate: task => runOnceBeforeUpdateTasks.push(task)
       },
 
       render = this.constructor.init(ctrl)
@@ -63,16 +59,16 @@ class BaseComponent extends Component {
     this.componentWillUnmount = beforeUnmountNotifier.notify
 
     this.render = () => {
-      const deferredTaskCount = deferredTasks.length
+      const taskCount = runOnceBeforeUpdateTasks.length
 
-      for (let i = 0; i < deferredTaskCount; ++i) {
-        deferredTasks[i]()
+      for (let i = 0; i < taskCount; ++i) {
+        runOnceBeforeUpdateTasks[i]()
       }
-      
-      if (deferredTaskCount === deferredTasks.length) {
-        deferredTasks.length = 0
+
+      if (taskCount === runOnceBeforeUpdateTasks.length) {
+        runOnceBeforeUpdateTasks.length = 0
       } else {
-        deferredTasks.splice(0, deferredTaskCount)
+        runOnceBeforeUpdateTasks.splice(0, taskCount)
       }
 
       beforeUpdateNotifier.notify()
@@ -81,19 +77,11 @@ class BaseComponent extends Component {
   }
 }
 
-
 function createNotifier() {
   const subscribers = []
 
   return {
-    notify(value) {
-      for (let i = 0; i < subscribers.length; ++i) {
-        const subscription = subscribers[i]
-
-        subscription && subscription(value)
-      }
-    },
-
+    notify: () => subscribers.forEach(it => it()),
     subscribe: subscriber => subscribers.push(subscriber)
   }
 }
