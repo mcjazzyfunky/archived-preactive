@@ -1,50 +1,49 @@
-import { options } from 'preact'
+import { Component } from 'preact'
 
-const COMPONENT_KEY = '__c' // that's ugly, isn't it?
+export default function statefulComponent(displayName, init) {
+  class CustomComponent extends Component {
+    constructor(props) {
+      super(props)
+      this.__mounted = false
+      this.__afterMountNotifier = createNotifier(),
+      this.__beforeUpdateNotifier = createNotifier(),
+      this.__afterUpdateNotifier = createNotifier(),
+      this.__beforeUnmountNotifier = createNotifier()
+    
+      this.__ctrl = {
+        getProps: () => this.props,
+        isMounted: () => this.__mounted,
+        update: () => this.forceUpdate(),
+        afterMount: this.__afterMountNotifier.subscribe,
+        beforeUpdate: this.__beforeUpdateNotifier.subscribe,
+        afterUpdate: this.__afterUpdateNotifier.subscribe,
+        beforeUnmount: this.__beforeUnmountNotifier.subscribe
+      }
 
-let currComponent
-let oldBeforeRender = options._render
-let oldAfterDiff = options.diffed
-let oldCommit = options._commit
-let oldBeforeUnmount = options.unmount
+      this.__render = init(this.__ctrl)
+    }
 
-options.diffed = vnode => {
-  oldAfterDiff && oldAfterDiff(vnode)
-  currComponent = vnode[COMPONENT_KEY]
-  
-  const data = currComponent && currComponent.__data
-  
-  if (data) {
-    if (data.mounted) {
-      data.notifiers.afterUpdate.notify() // TODO: What about commit?
-    } else {
-      data.mounted = true
-      data.notifiers.afterMount.notify()
+    componentDidMount() {
+      this.__afterMountNotifier.notify()
+    }
+
+    componentDidUpdate() {
+      this.__afterUpdateNotifier.notify()
+    }
+    
+    componentWillUnmount() {
+      this.__beforeUnmountNotifier.notify()
+    }
+
+    render(props) {
+      this.__beforeUpdateNotifier.notify()
+      return this.__render(props)
     }
   }
-}
 
-options._render = vnode => {
-  currComponent = vnode[COMPONENT_KEY]
-  oldBeforeRender && oldBeforeRender(vnode)
-}
+  CustomComponent.displayName = displayName
 
-options._commit = (vnode, commitQueue) => {
-  oldCommit && oldCommit(vnode, commitQueue)
-
-  // TODO - what to do here?
-}
-
-options.unmount = vnode => {
-  oldBeforeUnmount && oldBeforeUnmount(vnode)
-
-  const
-    component = vnode && vnode[COMPONENT_KEY],
-    data = component && component.__data
-
-  if (data) {
-    data.notifiers.beforeUnmount.notify()
-  }
+  return CustomComponent
 }
 
 function createCtrlAndNotifiers(getProps, isMounted, forceUpdate) {
@@ -65,42 +64,6 @@ function createCtrlAndNotifiers(getProps, isMounted, forceUpdate) {
     beforeUnmount: notifiers.beforeUnmount.subscribe
   }, notifiers]
 }
-
-export default function statefulComponent(displayName, init) {
-  const preactComponent = props => {
-
-    if (!currComponent.__data) {
-      const [ctrl, notifiers] = createCtrlAndNotifiers(
-        () => data.props,
-        () => data.mounted,
-        () => data.component.forceUpdate()
-      )
-
-      const data = {
-        component: currComponent,
-        props,
-        mounted: false,
-        notifiers,
-        ctrl,
-
-        render: null
-      }
-
-      currComponent.__data = data
-
-      data.render = init(ctrl)
-    } else {
-      currComponent.__data.notifiers.beforeUpdate.notify()
-    }
-    
-    return currComponent.__data.render(props)
-  }
-  
-  preactComponent.displayName = displayName
-
-  return preactComponent
-}
-
 function createNotifier() {
   let
     subscriptions = [],
