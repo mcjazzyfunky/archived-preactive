@@ -1,6 +1,6 @@
-# preactive 
+# Preactive 
 
-A R&D project to evaluate an alternative API developing
+A R&D project to evaluate an alternative API for developing
 components and hook functions with Preact.
 
 ### Installation
