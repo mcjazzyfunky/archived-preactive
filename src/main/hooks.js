@@ -1,15 +1,21 @@
 // --- useProps ------------------------------------------------------
 
-// TODO - this must be optimized
 export function useProps(c, defaultProps = null) {
-  const props = Object.assign({}, defaultProps, c.getProps())
+  let oldProps = c.getProps()
+  const props = Object.assign({}, defaultProps, oldProps) 
 
   c.beforeUpdate(() => {
-    for (const key in props) {
-      delete props[key]
-    }
+    const newProps = c.getProps()
 
-    Object.assign(props, defaultProps, c.getProps())
+    if (newProps !== oldProps) {
+      oldProps = newProps
+
+      for (const key in props) {
+        delete props[key]
+      }
+
+      Object.assign(props, defaultProps, newProps)
+    }
   })
 
   return props

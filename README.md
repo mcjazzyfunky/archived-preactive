@@ -45,3 +45,23 @@ const Counter = statefulComponent('Counter', c => {
 
 render(<Counter/>, document.getElementById('app'))
 ```
+
+In the above example the `c` is a so called component controller
+(a kind of representation for the component instance).
+It's type is currently (may change in future):
+
+```typescript
+type Ctrl<P extends Props = {}> = {
+  getProps(): P,
+  isMounted(): boolean,
+  afterMount(subscriber: Subscriber): void,
+  beforeUpdate(subscriber: Subscriber): void,
+  afterUpdate(subscriber: Subscriber): void,
+  beforeUnmount(subscriber: Subscriber): void,
+  runOneBeforeUpdate(task: Task): void
+}
+
+type Props = Record<string, any>
+type Subscriber = () => void
+type Task = () => void
+```
