@@ -81,3 +81,28 @@ type Subscriber = () => void
 type Task = () => void
 type Context<T> = Preact.Context<T>
 ```
+
+## API
+
+### *Package 'preactive'*
+
+- `statelessComponent(displayName, render: props => vnode)`
+- `statefulComponent(displayName, init: c => props => vnode)`
+
+### *Package 'preactive/utils'*
+
+- `getProps(c, defaultProps?)`
+- `isMounted(c)`
+- `forceUpdate(c)`
+- `asRef(subject)`
+- `toRef(getter)`
+
+### *Package 'preactive/hooks'*
+
+- `useProps(c, defaultProps)`
+- `useValue(c, initialValue)`
+- `useState(c, initialStateObject)`
+- `useContext(c, context)`
+- `useMemo(c, calculation, () => dependencies)`
+- `useEffect(c, action, () => dependencies)`
+- `useInterval(c, action, milliseconds)`
