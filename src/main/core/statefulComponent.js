@@ -36,7 +36,7 @@ class BaseComponent extends Component {
 
       ctrl = {
         getProps: () => this.props,
-        isMounted: () => mounted,
+        isMounted: () => mounted, // TODO: this is obviously sugar - shall it be removed???
         update: () => this.forceUpdate(),
 
         getContextValue: ctx => {
@@ -49,7 +49,7 @@ class BaseComponent extends Component {
         afterUpdate: afterUpdateNotifier.subscribe,
         beforeUnmount: beforeUnmountNotifier.subscribe,
 
-        deferTask: task => deferredTasks.push(task)
+        runOnceBeforeUpdate: task => deferredTasks.push(task) // TODO - shall this be merged with `update`???
       },
 
       render = this.constructor.init(ctrl)

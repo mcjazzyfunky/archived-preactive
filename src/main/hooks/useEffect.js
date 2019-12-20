@@ -1,3 +1,4 @@
+import isEqualArray from '../internal/isEqualArray'
 export default function useEffect(c, action, getDeps) {
   let
     oldDeps = null,
@@ -13,7 +14,7 @@ export default function useEffect(c, action, getDeps) {
       if (!needsAction) {
         const newDeps = getDeps()
 
-        needsAction = oldDeps === null || newDeps ===  null || !isEqual(oldDeps, newDeps)
+        needsAction = oldDeps === null || newDeps ===  null || !isEqualArray(oldDeps, newDeps)
         oldDeps = newDeps
       }
 
@@ -29,21 +30,4 @@ export default function useEffect(c, action, getDeps) {
     throw new TypeError(
       '[useEffect] Third argument must either be undefined, null or a function')
   }
-}
-
-// --- locals -------------------------------------------------------
-
-function isEqual(arr1, arr2) {
-  let ret = Array.isArray(arr1) && Array.isArray(arr2) && arr1.length === arr2.length
-
-  if (ret) {
-    for (let i = 0; i < arr1.length; ++i) {
-      if (arr1[i] !== arr2[i]) {
-        ret = false
-        break
-      }
-    }
-  }
-
-  return ret
 }

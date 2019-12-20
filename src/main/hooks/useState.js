@@ -15,7 +15,7 @@ export default function useState(c, initialState) {
         })
       } 
 
-      c.deferTask(() => {
+      c.runOnceBeforeUpdate(() => {
         Object.assign(state, typeof updater === 'function'
           ? updater(state)
           : updater

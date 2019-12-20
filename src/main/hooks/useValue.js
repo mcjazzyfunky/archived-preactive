@@ -3,7 +3,7 @@ export default function useValue(c, initialValue) {
     value = { value: initialValue },
 
     setValue = updater => {
-      c.deferTask(() => {
+      c.runOnceBeforeUpdate(() => {
         value.value = typeof updater === 'function'
           ? updater(value.value)
           : updater

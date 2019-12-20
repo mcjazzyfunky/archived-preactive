@@ -1,6 +1,9 @@
 import { h, createContext } from 'preact'
 import { statefulComponent } from '../public/preactive'
-import { useContext, useProps, useValue, useState, useInterval } from '../public/preactive-hooks'
+
+import { useContext, useEffect, useInterval, useMemo, useProps, useValue, useState }
+  from '../public/preactive-hooks'
+
 import { toRef } from '../public/preactive-utils'
 
 export default {
@@ -8,13 +11,16 @@ export default {
 }
 
 export const counterDemo = () => <CounterDemo/>
+export const clockDemo = () => <ClockDemo/>
+export const memoDemo = () => <MemoDemo/>
 export const intervalDemo = () => <IntervalDemo/>
 export const contextDemo = () => <ContextDemo/>
 
 // === Counter demo ==================================================
 
 const counterDefaults = {
-  initialValue: 0
+  initialValue: 0,
+  label: 'Counter'
 }
 
 const CounterDemo = statefulComponent('CounterDemo', c => {
@@ -24,11 +30,66 @@ const CounterDemo = statefulComponent('CounterDemo', c => {
     onIncrement = () => setCount(it => it + 1),
     onInput = ev => setCount(ev.currentTarget.valueAsNumber)
 
+  useEffect(c, () => {
+    console.log(`Value of "${props.label}" is now ${count.value}`)
+  }, () => [count.value])
+
   return () =>
     <div>
       <h3>Counter demo:</h3>
       <input type="number" value={count.value} onInput={onInput} />
       <button onClick={onIncrement}>{count.value}</button>
+    </div>
+})
+
+// === Clock demo ====================================================
+
+const ClockDemo = statefulComponent('ClockDemo', c => {
+  const time = useTime(c)
+
+  return () =>
+    <div>
+      <h3>Clock demo:</h3>
+      Current time: {time.value}
+    </div>
+})
+
+function getTime() {
+  return new Date().toLocaleTimeString()
+}
+
+function useTime(c) {
+  const [time, setTime] = useValue(c, getTime())
+
+  useInterval(c, () => {
+    setTime(getTime())
+  }, 1000)
+
+  return time
+}
+
+// === Memo demo =====================================================
+
+const MemoDemo = statefulComponent('MemoDemo', c => {
+  const
+    [count, setCount] = useValue(c, 0),
+    onButtonClick = () => setCount(it => it + 1),
+
+    memo = useMemo(c, () => {
+      return 'Last time the memoized value was calculated: '
+        + new Date().toLocaleTimeString()
+    }, () => [Math.floor(count.value / 5)])
+
+  return () =>
+    <div>
+      <h3>Memoization demo:</h3>
+      <button onClick={onButtonClick}>
+        Every time you've clicked this button 5 times<br/>
+        the memoized calculation will be performed again
+      </button>
+      <p>
+        {memo.value}
+      </p>
     </div>
 })
 
@@ -88,6 +149,7 @@ const ContextDemo = statefulComponent('ContextDemo', c => {
 
   return () => (
     <LocaleCtx.Provider value={locale.value}>
+      <h3>Context demo:</h3>
       <div>
         <label htmlFor="lang-selector">Select language: </label>
         <select id="lang-selector" value={locale.value} onChange={onLocaleChange}>
