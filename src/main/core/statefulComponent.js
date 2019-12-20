@@ -7,19 +7,7 @@ const
   keyContextDefaultValue = isMinimized ? '__' : '_defaultValue'
 
 export default function statefulComponent(displayName, init) {
-  class CustomComponent extends BaseComponent {}
-  CustomComponent.init = init
-  CustomComponent.displayName = displayName
-
-  return CustomComponent
-}
-
-class BaseComponent extends Component {
-  // static init(c) { ... } // will be set by function `statefulComponent`
-
-  constructor(props) {
-    super(props)
-    
+  const CustomComponent = function (props) {
     let mounted = false
 
     const
@@ -48,7 +36,7 @@ class BaseComponent extends Component {
         runOnceBeforeUpdate: task => runOnceBeforeUpdateTasks.push(task)
       },
 
-      render = this.constructor.init(ctrl)
+      render = init(ctrl)
 
     this.componentDidMount = () => {
       mounted = true
@@ -75,6 +63,11 @@ class BaseComponent extends Component {
       return render(props)
     }
   }
+
+  CustomComponent.prototype = Object.create(Component.prototype)
+  CustomComponent.displayName = displayName
+
+  return CustomComponent
 }
 
 function createNotifier() {
