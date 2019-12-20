@@ -1,6 +1,6 @@
-import { h } from 'preact'
+import { h, createContext } from 'preact'
 import { statefulComponent } from '../public/preactive'
-import { useProps, useValue, useState, useInterval } from '../public/preactive-hooks'
+import { useContext, useProps, useValue, useState, useInterval } from '../public/preactive-hooks'
 import { toRef } from '../public/preactive-utils'
 
 export default {
@@ -9,6 +9,7 @@ export default {
 
 export const counterDemo = () => <CounterDemo/>
 export const intervalDemo = () => <IntervalDemo/>
+export const contextDemo = () => <ContextDemo/>
 
 // === Counter demo ==================================================
 
@@ -62,4 +63,52 @@ const IntervalDemo = statefulComponent('IntervalDemo', c => {
         Reset delay
       </button>
     </div>
+})
+
+// === Context demo ==================================================
+
+const translations = {
+  en: {
+    salutation: 'Hello, ladies and gentlemen!'
+  },
+  de: {
+    salutation: 'Hallo, meine Damen und Herren!'
+  },
+  fr: {
+    salutation: 'Salut, Mesdames, Messieurs!'
+  }
+}
+
+const LocaleCtx = createContext('en')
+
+const ContextDemo = statefulComponent('ContextDemo', c => {
+  const
+    [locale, setLocale] = useValue(c, 'en'),
+    onLocaleChange = ev => setLocale(ev.target.value)
+
+  return () => (
+    <LocaleCtx.Provider value={locale.value}>
+      <div>
+        <label htmlFor="lang-selector">Select language: </label>
+        <select id="lang-selector" value={locale.value} onChange={onLocaleChange}>
+          <option value="en">en</option>
+          <option value="fr">fr</option>
+          <option value="de">de</option>
+        </select>
+        <LocaleText id="salutation"/>
+      </div>
+    </LocaleCtx.Provider>
+  )
+})
+
+const LocaleText = statefulComponent('LocaleText', c => {
+  const
+    locale = useContext(c, LocaleCtx),
+    props = useProps(c)
+
+  return () => (
+    <p>
+      { translations[locale.value][props.id] }
+    </p>
+  )
 })

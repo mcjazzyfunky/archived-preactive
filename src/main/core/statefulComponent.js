@@ -1,43 +1,54 @@
-import { Component } from 'preact'
+import { Component, options } from 'preact'
+
+// Brrrr, this is horrible as hell - please fix asap!!!!
+const
+  isMinimized = Component.name !== 'Component',
+  keyContextId = isMinimized ? '__c' : '_id',
+  keyContextDefaultValue = isMinimized ? '__' : '_defaultValue'
 
 export default function statefulComponent(displayName, init) {
   class CustomComponent extends Component {
     constructor(props) {
       super(props)
-      this.__mounted = false
-      this.__afterMountNotifier = createNotifier(),
-      this.__beforeUpdateNotifier = createNotifier(),
-      this.__afterUpdateNotifier = createNotifier(),
-      this.__beforeUnmountNotifier = createNotifier()
-    
-      this.__ctrl = {
-        getProps: () => this.props,
-        isMounted: () => this.__mounted,
-        update: () => this.forceUpdate(),
-        afterMount: this.__afterMountNotifier.subscribe,
-        beforeUpdate: this.__beforeUpdateNotifier.subscribe,
-        afterUpdate: this.__afterUpdateNotifier.subscribe,
-        beforeUnmount: this.__beforeUnmountNotifier.subscribe
+      
+      let mounted = false
+
+      const
+        afterMountNotifier = createNotifier(),
+        beforeUpdateNotifier = createNotifier(),
+        afterUpdateNotifier = createNotifier(),
+        beforeUnmountNotifier = createNotifier(),
+
+        ctrl = {
+          getProps: () => this.props,
+          isMounted: () => mounted,
+          update: () => this.forceUpdate(),
+
+          getContextValue: ctx => {
+            const provider = this.context[ctx[keyContextId]]
+            const ret = !provider ? ctx[keyContextDefaultValue]: provider.props.value
+            return ret
+          },
+          afterMount: afterMountNotifier.subscribe,
+          beforeUpdate: beforeUpdateNotifier.subscribe,
+          afterUpdate: afterUpdateNotifier.subscribe,
+          beforeUnmount: beforeUnmountNotifier.subscribe
+        },
+
+        render = init(ctrl)
+
+      this.componentDidMount = () => {
+        mounted = true
+        afterMountNotifier.notify()
       }
 
-      this.__render = init(this.__ctrl)
-    }
+      this.componentDidUpdate = afterUpdateNotifier.notify
+      this.componentWillUnmount = beforeUnmountNotifier.notify
 
-    componentDidMount() {
-      this.__afterMountNotifier.notify()
-    }
-
-    componentDidUpdate() {
-      this.__afterUpdateNotifier.notify()
-    }
-    
-    componentWillUnmount() {
-      this.__beforeUnmountNotifier.notify()
-    }
-
-    render(props) {
-      this.__beforeUpdateNotifier.notify()
-      return this.__render(props)
+      this.render = () => {
+        beforeUpdateNotifier.notify()
+        return render(props)
+      }
     }
   }
 
@@ -46,24 +57,6 @@ export default function statefulComponent(displayName, init) {
   return CustomComponent
 }
 
-function createCtrlAndNotifiers(getProps, isMounted, forceUpdate) {
-  const notifiers = {
-    afterMount: createNotifier(),
-    beforeUpdate: createNotifier(),
-    afterUpdate: createNotifier(),
-    beforeUnmount: createNotifier()
-  }
-
-  return [{
-    getProps,
-    isMounted,
-    update: forceUpdate,
-    afterMount: notifiers.afterMount.subscribe,
-    beforeUpdate: notifiers.beforeUpdate.subscribe,
-    afterUpdate: notifiers.afterUpdate.subscribe,
-    beforeUnmount: notifiers.beforeUnmount.subscribe
-  }, notifiers]
-}
 function createNotifier() {
   let
     subscriptions = [],
