@@ -1,15 +1,15 @@
 # Preactive 
 
 A R&D project to evaluate an alternative API for developing
-components and hook functions with Preact.
-It's main advantages are:
+components and hook functions with Preact.<br>
+The main advantages of the new API are:
 
 - 0% magic
 - Does not make any trouble for the garbage collector
-- No rules of hookes
+- No rules of hooks
 - No special linter necessary
 - 100% accurately typeable - in the function type signature
-  of hook functions or function that generate hook functions,
+  of hook functions or function that generate hook functions etc.,
   it will always be visible what we are dealing with.
 
 ### Installation
