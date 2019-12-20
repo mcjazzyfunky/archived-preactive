@@ -94,7 +94,7 @@ type Context<T> = Preact.Context<T>
 - `getProps(c, defaultProps?)`
 - `isMounted(c)`
 - `forceUpdate(c)`
-- `asRef(subject)`
+- `asRef(valueOrRef)`
 - `toRef(getter)`
 
 ### *Package 'preactive/hooks'*
@@ -106,3 +106,7 @@ type Context<T> = Preact.Context<T>
 - `useMemo(c, calculation, () => dependencies)`
 - `useEffect(c, action, () => dependencies)`
 - `useInterval(c, action, milliseconds)`
+
+## Project status
+
+This R&D project is still in a very early development state
