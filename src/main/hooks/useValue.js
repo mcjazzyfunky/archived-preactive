@@ -3,9 +3,7 @@ export default function useValue(c, initialValue) {
     value = { value: initialValue },
 
     setValue = updater => {
-      const unsubscribe = c.beforeUpdate(() => {
-        unsubscribe()
-
+      c.deferTask(() => {
         value.value = typeof updater === 'function'
           ? updater(value.value)
           : updater

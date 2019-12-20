@@ -32,6 +32,7 @@ class BaseComponent extends Component {
       beforeUpdateNotifier = createNotifier(),
       afterUpdateNotifier = createNotifier(),
       beforeUnmountNotifier = createNotifier(),
+      deferredTasks = [],
 
       ctrl = {
         getProps: () => this.props,
@@ -46,7 +47,9 @@ class BaseComponent extends Component {
         afterMount: afterMountNotifier.subscribe,
         beforeUpdate: beforeUpdateNotifier.subscribe,
         afterUpdate: afterUpdateNotifier.subscribe,
-        beforeUnmount: beforeUnmountNotifier.subscribe
+        beforeUnmount: beforeUnmountNotifier.subscribe,
+
+        deferTask: task => deferredTasks.push(task)
       },
 
       render = this.constructor.init(ctrl)
@@ -60,6 +63,10 @@ class BaseComponent extends Component {
     this.componentWillUnmount = beforeUnmountNotifier.notify
 
     this.render = () => {
+      while (deferredTasks.length > 0) {
+        deferredTasks.pop()()
+      }
+
       beforeUpdateNotifier.notify()
       return render(props)
     }
@@ -68,57 +75,17 @@ class BaseComponent extends Component {
 
 
 function createNotifier() {
-  let
-    subscriptions = [],
-    isNotifying = false,
-    changedWhileNotifying = false
-    
+  const subscribers = []
+
   return {
     notify(value) {
-      isNotifying = true
+      for (let i = 0; i < subscribers.length; ++i) {
+        const subscription = subscribers[i]
 
-      try {
-        const length = subscriptions.length
-
-        for (let i = 0; i < length; ++i) {
-          const subscription = subscriptions[i]
-
-          subscription && subscription(value)
-        }
-      } finally {
-        isNotifying = false
-
-        if (changedWhileNotifying) {
-          changedWhileNotifying = false
-          subscriptions = subscriptions.filter(it => it !== null)
-        }
+        subscription && subscription(value)
       }
     },
 
-    subscribe(subscriber) {
-      let listener = subscriber.bind(null)
-
-      const unsubscribe = () => {
-        if (listener !== null) {
-          const index = subscriptions.findIndex(it => it && it === listener)
-          
-          listener = null
-
-          if (isNotifying) {
-            subscriptions[index] = null
-            changedWhileNotifying = true
-          } else {
-            subscriptions.splice(index, 1)
-          }
-        }
-      }
-
-      subscriptions.push(listener)
-      return unsubscribe
-    },
-
-    dismiss() {
-      subscriptions.length = 0
-    }
+    subscribe: subscriber => subscribers.push(subscriber)
   }
 }

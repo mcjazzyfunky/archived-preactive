@@ -15,9 +15,7 @@ export default function useState(c, initialState) {
         })
       } 
 
-      const unsubscribe = c.beforeUpdate(() => {
-        unsubscribe()
-
+      c.deferTask(() => {
         Object.assign(state, typeof updater === 'function'
           ? updater(state)
           : updater
