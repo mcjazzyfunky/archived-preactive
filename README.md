@@ -1,7 +1,7 @@
 # preactive 
 
-A R&D project to evaluate an alternative API for components and
-hook functions for Preact.
+A R&D project to evaluate an alternative API developing
+components and hook functions with Preact.
 
 ### Installation
 
@@ -61,7 +61,7 @@ type Ctrl<P extends Props = {}> = {
   beforeUpdate(subscriber: Subscriber): void,
   afterUpdate(subscriber: Subscriber): void,
   beforeUnmount(subscriber: Subscriber): void,
-  runOneBeforeUpdate(task: Task): void
+  runOnceBeforeUpdate(task: Task): void
 }
 
 type Props = Record<string, any>
