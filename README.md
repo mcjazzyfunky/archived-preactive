@@ -38,7 +38,7 @@ const Counter = statefulComponent('Counter', c => {
 
   return () =>
     <div>
-      <h3>{props.label}: </h3>
+      <label>{props.label}: </label>
       <input type="number" value={count.value} onInput={onInput} />
       <button onClick={onIncrement}>{count.value}</button>
     </div>
@@ -49,7 +49,10 @@ render(<Counter/>, document.getElementById('app'))
 
 In the above example the `c` is a so called component controller
 (some kind of representation for the component instance).
-Its type is currently (may change in future):
+The type of the component controller is currently the following
+(please be aware that "normal" developers will never have to use these
+methods directly they will only be used internally by some basic
+hook and utility functions):
 
 ```typescript
 type Ctrl<P extends Props = {}> = {
