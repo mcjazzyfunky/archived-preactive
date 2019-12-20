@@ -6,7 +6,7 @@ const
   keyContextId = isMinimized ? '__c' : '_id',
   keyContextDefaultValue = isMinimized ? '__' : '_defaultValue'
 
-export default function statefulComponent(displayName, init) {
+export function statefulComponent(displayName, init) {
   const CustomComponent = function (props) {
     let mounted = false
 
@@ -37,6 +37,8 @@ export default function statefulComponent(displayName, init) {
       },
 
       render = init(ctrl)
+
+    this.props = props
 
     this.componentDidMount = () => {
       mounted = true
@@ -77,4 +79,9 @@ function createNotifier() {
     notify: () => subscribers.forEach(it => it()),
     subscribe: subscriber => subscribers.push(subscriber)
   }
+}
+export function statelessComponent(displayName, render) {
+  const ret = render.bind(null)
+  ret.displayName = displayName
+  return ret
 }

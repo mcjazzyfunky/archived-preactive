@@ -1,10 +1,10 @@
 import { h, createContext } from 'preact'
-import { statefulComponent } from '../public/preactive'
+import { statefulComponent } from '../main/core'
 
 import { useContext, useEffect, useInterval, useMemo, useProps, useValue, useState }
-  from '../public/preactive-hooks'
+  from '../main/hooks'
 
-import { toRef } from '../public/preactive-utils'
+import { toRef } from '../main/utils'
 
 export default {
   title: 'Demos'

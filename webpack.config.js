@@ -30,9 +30,7 @@ function createConfig(pkg, moduleType, environment, cleanup = false, zip = false
   const isProd = environment === 'production'
 
   return {
-    entry: pkg === 'core'
-      ? './src/public/preactive.js'
-      : `./src/public/preactive-${pkg}.js`,
+    entry: `./src/main/${pkg}.js`,
     mode: environment,
 
     output: {
