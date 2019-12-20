@@ -63,8 +63,16 @@ class BaseComponent extends Component {
     this.componentWillUnmount = beforeUnmountNotifier.notify
 
     this.render = () => {
-      while (deferredTasks.length > 0) {
-        deferredTasks.pop()()
+      const deferredTaskCount = deferredTasks.length
+
+      for (let i = 0; i < deferredTaskCount; ++i) {
+        deferredTasks[i]()
+      }
+      
+      if (deferredTaskCount === deferredTasks.length) {
+        deferredTasks.length = 0
+      } else {
+        deferredTasks.splice(0, deferredTaskCount)
       }
 
       beforeUpdateNotifier.notify()
