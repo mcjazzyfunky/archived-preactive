@@ -22,14 +22,6 @@ export function toRef(getter) {
   return ref
 }
 
-// --- getProps ------------------------------------------------------
-
-export function getProps(c, defaultProps = null) {
-  return !defaultProps
-    ? c.getProps()
-    : Object.assign({}, defaultProps, c.getProps())
-}
-
 // --- isMounted -----------------------------------------------------
 
 export function isMounted(c) {

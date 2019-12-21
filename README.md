@@ -115,7 +115,6 @@ type Context<T> = Preact.Context<T>
 
 ### *Package 'preactive/utils'*
 
-- `getProps(c, defaultProps?)`
 - `isMounted(c)`
 - `forceUpdate(c)`
 - `asRef(valueOrRef)`
