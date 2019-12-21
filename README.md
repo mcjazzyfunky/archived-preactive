@@ -223,7 +223,6 @@ type Context<T> = Preact.Context<T>
 - `statelessComponent(displayName, render: props => vnode)`
 - `statelessComponent(meta, render: props => vnode)`
 - `statelessComponent(config)`
-
 - `statefulComponent(displayName, init: c => props => vnode)`
 - `statefulComponent(meta, init: c => props => vnode)`
 - `statefulComponent(config)`
