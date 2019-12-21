@@ -137,6 +137,7 @@ import { statefulComponent, useValue } from 'preactive'
 
 const Counter = statefulComponent({
   displayName: 'Counter',
+  memoize: true,
   
   defaultProps: {
     initialValue: 0,
@@ -165,6 +166,7 @@ import { statefulComponent, useValue } from 'preactive'
 
 const Counter = statefulComponent({
   displayName: 'Counter',
+  memoize: true,
   
   defaultProps: {
     initialValue: 0,
@@ -216,7 +218,7 @@ type Context<T> = Preact.Context<T>
 
 ## API
 
-### *component definition*
+### Component definition
 
 - `statelessComponent(displayName, render: props => vnode)`
 - `statelessComponent(meta, render: props => vnode)`
@@ -226,14 +228,14 @@ type Context<T> = Preact.Context<T>
 - `statefulComponent(meta, init: c => props => vnode)`
 - `statefulComponent(config)`
 
-### *utility functions*
+### Utility functions
 
 - `isMounted(c)`
 - `forceUpdate(c)`
 - `asRef(valueOrRef)`
 - `toRef(getter)`
 
-### *hooks*
+### Hooks
 
 - `useValue(c, initialValue)`
 - `useState(c, initialStateObject)`
