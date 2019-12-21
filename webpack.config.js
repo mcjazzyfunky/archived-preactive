@@ -42,7 +42,7 @@ function createConfig(pkg, moduleType, environment, cleanup = false, zip = false
       filename: `preactive.${pkg}.${moduleType}.${environment}.js`
     },
 
-    externals: ['preact', 'preact/hooks'],
+    externals: ['preact', 'preact/hooks', 'js-spec', 'js-spec/validators'],
 
     module: {
       rules: [

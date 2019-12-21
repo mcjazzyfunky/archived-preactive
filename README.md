@@ -31,16 +31,41 @@ npm run storybook
 ```jsx
 import { h, render } from 'preact'
 import { statefulComponent } from 'preactive'
-import { useProps, useValue } from 'preactive/hooks'
+import { useValue } from 'preactive/hooks'
 
-const counterDefaults = {
-  initialValue: 0,
-  label: 'Counter'
-}
-
-const Counter = statefulComponent('Counter', c => {
+const Counter = statefulComponent('Counter', (c, props) => {
   const
-    props = useProps(c, counterDefaults),
+    [count, setCount] = useValue(c, props.initialValue || 0),
+    onIncrement = () => setCount(it => it + 1),
+    onInput = ev => setCount(ev.currentTarget.valueAsNumber)
+
+  return () =>
+    <div>
+      <label>{props.label || 'Counter'}: </label>
+      <input type="number" value={count.value} onInput={onInput} />
+      <button onClick={onIncrement}>{count.value}</button>
+    </div>
+})
+
+render(<Counter/>, document.getElementById('app'))
+```
+
+### Alternative syntax
+
+```jsx
+import { h, render } from 'preact'
+import { statefulComponent } from 'preactive'
+import { useValue } from 'preactive/hooks'
+
+const Counter = statefulComponent({
+  displayName: 'Counter',
+  
+  defaultProps: {
+    initialValue: 0,
+    label: 'Counter'
+  }
+}, (c, props) => {
+  const
     [count, setCount] = useValue(c, props.initialValue),
     onIncrement = () => setCount(it => it + 1),
     onInput = ev => setCount(ev.currentTarget.valueAsNumber)
@@ -64,8 +89,7 @@ methods directly they will only be used internally by some basic
 hook and utility functions):
 
 ```typescript
-type Ctrl<P extends Props = {}> = {
-  getProps(): P,
+type Ctrl = {
   isMounted(): boolean,
   update(): void,
   getContextValue<T>(Context<T>): T,
@@ -99,7 +123,6 @@ type Context<T> = Preact.Context<T>
 
 ### *Package 'preactive/hooks'*
 
-- `useProps(c, defaultProps)`
 - `useValue(c, initialValue)`
 - `useState(c, initialStateObject)`
 - `useContext(c, context)`

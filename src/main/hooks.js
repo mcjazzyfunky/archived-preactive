@@ -1,26 +1,3 @@
-// --- useProps ------------------------------------------------------
-
-export function useProps(c, defaultProps = null) {
-  let oldProps = c.getProps()
-  const props = Object.assign({}, defaultProps, oldProps) 
-
-  c.beforeUpdate(() => {
-    const newProps = c.getProps()
-
-    if (newProps !== oldProps) {
-      oldProps = newProps
-
-      for (const key in props) {
-        delete props[key]
-      }
-
-      Object.assign(props, defaultProps, newProps)
-    }
-  })
-
-  return props
-}
-
 // --- useState ------------------------------------------------------
 
 export function useState(c, initialState) {

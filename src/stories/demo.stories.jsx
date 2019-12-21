@@ -1,7 +1,7 @@
 import { h, createContext } from 'preact'
 import { statefulComponent } from '../main/core'
 
-import { useContext, useEffect, useInterval, useMemo, useProps, useValue, useState }
+import { useContext, useEffect, useInterval, useMemo, useValue, useState }
   from '../main/hooks'
 
 import { toRef } from '../main/utils'
@@ -10,22 +10,46 @@ export default {
   title: 'Demos'
 }
 
-export const counterDemo = () => <CounterDemo/>
+export const counterDemo1 = () => <CounterDemo1/>
+export const counterDemo2 = () => <CounterDemo2/>
+export const counterDemo3 = () => <CounterDemo3/>
 export const clockDemo = () => <ClockDemo/>
 export const memoDemo = () => <MemoDemo/>
 export const intervalDemo = () => <IntervalDemo/>
 export const contextDemo = () => <ContextDemo/>
 
-// === Counter demo ==================================================
+// === Counter demo 1 ================================================
 
-const counterDefaults = {
-  initialValue: 0,
-  label: 'Counter'
-}
-
-const CounterDemo = statefulComponent('CounterDemo', c => {
+const CounterDemo1 = statefulComponent('CounterDemo1', (c, props) => {
   const
-    props = useProps(c, counterDefaults),
+    [count, setCount] = useValue(c, props.initialValue || 0),
+    onIncrement = () => setCount(it => it + 1),
+    onInput = ev => setCount(ev.currentTarget.valueAsNumber)
+
+  useEffect(c, () => {
+    console.log(`Value of "${props.label}" is now ${count.value}`)
+  }, () => [count.value])
+
+  return () =>
+    <div>
+      <h3>Counter demo 1:</h3>
+      <input type="number" value={count.value} onInput={onInput} />
+      <button onClick={onIncrement}>{count.value}</button>
+    </div>
+})
+
+// === Counter demo 2 ================================================
+
+const CounterDemo2 = statefulComponent({
+  displayName: 'CounterDemo2',
+
+  defaultProps: {
+
+    initialValue: 0,
+    label: 'Counter'
+  }
+}, (c, props) => {
+  const
     [count, setCount] = useValue(c, props.initialValue),
     onIncrement = () => setCount(it => it + 1),
     onInput = ev => setCount(ev.currentTarget.valueAsNumber)
@@ -36,10 +60,39 @@ const CounterDemo = statefulComponent('CounterDemo', c => {
 
   return () =>
     <div>
-      <h3>Counter demo:</h3>
+      <h3>Counter demo 2:</h3>
       <input type="number" value={count.value} onInput={onInput} />
       <button onClick={onIncrement}>{count.value}</button>
     </div>
+})
+
+// === Counter demo 3 ================================================
+
+const CounterDemo3 = statefulComponent({
+  displayName: 'CounterDemo3',
+  memoize: true,
+
+  defaultProps: {
+    initialValue: 0,
+    label: 'Counter'
+  },
+  init: (c, props) => {
+    const
+      [count, setCount] = useValue(c, props.initialValue),
+      onIncrement = () => setCount(it => it + 1),
+      onInput = ev => setCount(ev.currentTarget.valueAsNumber)
+
+    useEffect(c, () => {
+      console.log(`Value of "${props.label}" is now ${count.value}`)
+    }, () => [count.value])
+
+    return () =>
+      <div>
+        <h3>Counter demo 3:</h3>
+        <input type="number" value={count.value} onInput={onInput} />
+        <button onClick={onIncrement}>{count.value}</button>
+      </div>
+  }
 })
 
 // === Clock demo ====================================================
@@ -163,10 +216,8 @@ const ContextDemo = statefulComponent('ContextDemo', c => {
   )
 })
 
-const LocaleText = statefulComponent('LocaleText', c => {
-  const
-    locale = useContext(c, LocaleCtx),
-    props = useProps(c)
+const LocaleText = statefulComponent('LocaleText', (c, props) => {
+  const locale = useContext(c, LocaleCtx)
 
   return () => (
     <p>
