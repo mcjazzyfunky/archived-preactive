@@ -15,31 +15,27 @@ const
 
 const configs = []
 
-for (const pkg of ['core', 'utils', 'hooks']) {
-  for (const moduleType of ['cjs', 'umd', 'esm']) {
-    for (const environment of ['development', 'production']) {
-      // TODO - this is aweful - fix it
-      configs.push(createConfig(pkg, moduleType, environment, !configs, !configs))
-    }
+for (const moduleType of ['cjs', 'umd', 'esm']) {
+  for (const environment of ['development', 'production']) {
+    // TODO - this is aweful - fix it
+    configs.push(createConfig(moduleType, environment, !configs, !configs))
   }
 }
 
 module.exports = configs
 
-function createConfig(pkg, moduleType, environment, cleanup = false, zip = false) {
+function createConfig(moduleType, environment, cleanup = false, zip = false) {
   const isProd = environment === 'production'
 
   return {
-    entry: `./src/main/${pkg}.js`,
+    entry: `./src/main/index.js`,
     mode: environment,
 
     output: {
-      library: pkg === 'core'
-        ? 'preactive'
-        : `preactive.${pkg}`,
+      library: 'preactive',
       libraryTarget:  libraryTargetMap[moduleType],
       path: path.resolve(__dirname, 'dist'),
-      filename: `preactive.${pkg}.${moduleType}.${environment}.js`
+      filename: `preactive.${moduleType}.${environment}.js`
     },
 
     externals: ['preact', 'preact/hooks', 'js-spec', 'js-spec/validators'],
@@ -88,8 +84,6 @@ function createConfig(pkg, moduleType, environment, cleanup = false, zip = false
       ]
       
       //new UglifyJsPlugin()
-    },
-
-
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { memo, Component } from 'preact'
+import { Component } from 'preact'
 import * as Spec from 'js-spec/validators'
 
 // Brrrr, this is horrible as hell - please fix asap!!!!
@@ -213,25 +213,31 @@ export function statefulComponent(arg1, arg2) {
 
 // --- locals --------------------------------------------------------
 
-const validateStatelessComponentConfig =
-  Spec.exact({
-    displayName: Spec.match(REGEX_DISPLAY_NAME),
-    memoize: Spec.optional(Spec.boolean),
-    validate: Spec.optional(Spec.func),
+let
+  validateStatelessComponentConfig,
+  validateStatefulComponentConfig
 
-    defaultProps: Spec.optional(Spec.object),
-    render: Spec.func
-  })
+if (process.env.NODE_ENV === 'development') {
+  validateStatelessComponentConfig =
+    Spec.exact({
+      displayName: Spec.match(REGEX_DISPLAY_NAME),
+      memoize: Spec.optional(Spec.boolean),
+      validate: Spec.optional(Spec.func),
 
-const validateStatefulComponentConfig =
-  Spec.exact({
-    displayName: Spec.match(REGEX_DISPLAY_NAME),
-    memoize: Spec.optional(Spec.boolean),
-    validate: Spec.optional(Spec.func),
+      defaultProps: Spec.optional(Spec.object),
+      render: Spec.func
+    })
 
-    defaultProps: Spec.optional(Spec.object),
-    init: Spec.func
-  })
+  validateStatefulComponentConfig =
+    Spec.exact({
+      displayName: Spec.match(REGEX_DISPLAY_NAME),
+      memoize: Spec.optional(Spec.boolean),
+      validate: Spec.optional(Spec.func),
+
+      defaultProps: Spec.optional(Spec.object),
+      init: Spec.func
+    })
+}
 
 function hasOnwProp(obj, propName) {
   return Object.prototype.hasOwnProperty.call(obj, propName)

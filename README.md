@@ -26,23 +26,102 @@ npm install
 npm run storybook
 ```
 
-## Example
+## Examples
+
+### Stateless components (variant 1)
 
 ```jsx
 import { h, render } from 'preact'
-import { statefulComponent } from 'preactive'
-import { useValue } from 'preactive/hooks'
+import { statelessComponent } from 'preactive'
+
+const HelloWorld = statelessComponent('HelloWorld', props => {
+  return (
+    <div>
+      {props.salutation || 'Hello'}, {props.name || 'world'}
+    </div>
+  )
+})
+```
+
+### Stateless components (variant 2)
+
+```jsx
+import { h, render } from 'preact'
+import { statelessComponent } from 'preactive'
+
+const HelloWorld = statelessComponent('HelloWorld', ({
+  salutation = 'Hello',
+  name = 'world'
+}) => {
+  return (
+    <div>
+      {props.salutation}, {props.name}
+    </div>
+  )
+})
+```
+### Stateless components (variant 3)
+
+```jsx
+import { h, render } from 'preact'
+import { statelessComponent } from 'preactive'
+
+const HelloWorld = statelessComponent({
+  displayName: 'HelloWorld',
+
+  defaultProps: {
+    salutation: 'Hello',
+    name: 'world'
+  }
+}, props => {
+  return (
+    <div>
+      {props.salutation}, {props.name}
+    </div>
+  )
+})
+```
+
+### Stateless components (variant 4)
+
+```jsx
+import { h, render } from 'preact'
+import { statelessComponent } from 'preactive'
+
+const HelloWorld = statelessComponent({
+  displayName: 'HelloWorld',
+
+  defaultProps: {
+    salutation: 'Hello',
+    name: 'world'
+  },
+
+  render: renderHelloWorld
+}
+
+function renderHelloWorld(props) {
+  return (
+    <div>
+      {props.salutation}, {props.name}
+    </div>
+  )
+}
+```
+
+### Stateful components (variant 1)
+
+```jsx
+import { h, render } from 'preact'
+import { statefulComponent, useValue } from 'preactive'
 
 const Counter = statefulComponent('Counter', (c, props) => {
   const
     [count, setCount] = useValue(c, props.initialValue || 0),
-    onIncrement = () => setCount(it => it + 1),
-    onInput = ev => setCount(ev.currentTarget.valueAsNumber)
+    onIncrement = () => setCount(it => it + 1)
 
   return () =>
     <div>
       <label>{props.label || 'Counter'}: </label>
-      <input type="number" value={count.value} onInput={onInput} />
       <button onClick={onIncrement}>{count.value}</button>
     </div>
 })
@@ -50,12 +129,11 @@ const Counter = statefulComponent('Counter', (c, props) => {
 render(<Counter/>, document.getElementById('app'))
 ```
 
-### Alternative syntax
+### Stateful components (variant 2)
 
 ```jsx
 import { h, render } from 'preact'
-import { statefulComponent } from 'preactive'
-import { useValue } from 'preactive/hooks'
+import { statefulComponent, useValue } from 'preactive'
 
 const Counter = statefulComponent({
   displayName: 'Counter',
@@ -67,13 +145,11 @@ const Counter = statefulComponent({
 }, (c, props) => {
   const
     [count, setCount] = useValue(c, props.initialValue),
-    onIncrement = () => setCount(it => it + 1),
-    onInput = ev => setCount(ev.currentTarget.valueAsNumber)
+    onIncrement = () => setCount(it => it + 1)
 
   return () =>
     <div>
       <label>{props.label}: </label>
-      <input type="number" value={count.value} onInput={onInput} />
       <button onClick={onIncrement}>{count.value}</button>
     </div>
 })
@@ -81,12 +157,11 @@ const Counter = statefulComponent({
 render(<Counter/>, document.getElementById('app'))
 ```
 
-### Another alternative syntax
+### Stateful components (variant 3)
 
 ```jsx
 import { h, render } from 'preact'
-import { statefulComponent } from 'preactive'
-import { useValue } from 'preactive/hooks'
+import { statefulComponent, useValue } from 'preactive'
 
 const Counter = statefulComponent({
   displayName: 'Counter',
@@ -102,13 +177,11 @@ const Counter = statefulComponent({
 function initCounter(c, props) {
   const
     [count, setCount] = useValue(c, props.initialValue),
-    onIncrement = () => setCount(it => it + 1),
-    onInput = ev => setCount(ev.currentTarget.valueAsNumber)
+    onIncrement = () => setCount(it => it + 1)
 
   return () =>
     <div>
       <label>{props.label}: </label>
-      <input type="number" value={count.value} onInput={onInput} />
       <button onClick={onIncrement}>{count.value}</button>
     </div>
 })
@@ -143,19 +216,24 @@ type Context<T> = Preact.Context<T>
 
 ## API
 
-### *Package 'preactive'*
+### *component definition*
 
 - `statelessComponent(displayName, render: props => vnode)`
-- `statefulComponent(displayName, init: c => props => vnode)`
+- `statelessComponent(meta, render: props => vnode)`
+- `statelessComponent(config)`
 
-### *Package 'preactive/utils'*
+- `statefulComponent(displayName, init: c => props => vnode)`
+- `statefulComponent(meta, init: c => props => vnode)`
+- `statefulComponent(config)`
+
+### *utility functions*
 
 - `isMounted(c)`
 - `forceUpdate(c)`
 - `asRef(valueOrRef)`
 - `toRef(getter)`
 
-### *Package 'preactive/hooks'*
+### *hooks*
 
 - `useValue(c, initialValue)`
 - `useState(c, initialStateObject)`
@@ -164,6 +242,6 @@ type Context<T> = Preact.Context<T>
 - `useEffect(c, action, () => dependencies)`
 - `useInterval(c, action, milliseconds)`
 
-## Project status
+## Project state
 
 This R&D project is still in a very early development state

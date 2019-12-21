@@ -1,8 +1,9 @@
 import { h, createContext } from 'preact'
-import { statefulComponent } from '../main/core'
 
-import { useContext, useEffect, useInterval, useMemo, useValue, useState }
-  from '../main/hooks'
+import {
+  statefulComponent,
+  useContext, useEffect, useInterval, useMemo, useValue, useState
+} from '../main'
 
 import { toRef } from '../main/utils'
 
