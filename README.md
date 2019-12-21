@@ -81,7 +81,42 @@ const Counter = statefulComponent({
 render(<Counter/>, document.getElementById('app'))
 ```
 
-In the above example the `c` is a so called component controller
+### Another alternative syntax
+
+```jsx
+import { h, render } from 'preact'
+import { statefulComponent } from 'preactive'
+import { useValue } from 'preactive/hooks'
+
+const Counter = statefulComponent({
+  displayName: 'Counter',
+  
+  defaultProps: {
+    initialValue: 0,
+    label: 'Counter'
+  },
+
+  init: initCounter
+})
+
+function initCounter(c, props) {
+  const
+    [count, setCount] = useValue(c, props.initialValue),
+    onIncrement = () => setCount(it => it + 1),
+    onInput = ev => setCount(ev.currentTarget.valueAsNumber)
+
+  return () =>
+    <div>
+      <label>{props.label}: </label>
+      <input type="number" value={count.value} onInput={onInput} />
+      <button onClick={onIncrement}>{count.value}</button>
+    </div>
+})
+
+render(<Counter/>, document.getElementById('app'))
+```
+
+In the above examples the `c` is a so called component controller
 (some kind of representation for the component instance).
 The type of the component controller is currently the following
 (please be aware that "normal" developers will never have to use these
